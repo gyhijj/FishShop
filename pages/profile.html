@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет - FishShop</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/header.css">
+    <link rel="stylesheet" href="../css/footer.css">
+    <link rel="stylesheet" href="../css/catalog.css">
+    <link rel="stylesheet" href="../css/modal.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .profile-content {
+            padding: var(--spacing-2xl) 0;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: var(--spacing-2xl);
+        }
+        
+        .profile-sidebar {
+            background: hsl(var(--surface));
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            border: 1px solid hsl(var(--border));
+            height: fit-content;
+        }
+        
+        .profile-nav {
+            list-style: none;
+        }
+        
+        .profile-nav a {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            color: hsl(var(--text-secondary));
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .profile-nav a:hover,
+        .profile-nav a.active {
+            background: hsl(var(--surface-2));
+            color: hsl(var(--primary-color));
+        }
+        
+        .profile-main {
+            background: hsl(var(--surface));
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            border: 1px solid hsl(var(--border));
+        }
+        
+        .profile-section {
+            display: none;
+        }
+        
+        .profile-section.active {
+            display: block;
+        }
+        
+        .profile-section h2 {
+            margin-bottom: var(--spacing-lg);
+            color: hsl(var(--text-primary));
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+        
+        .order-card {
+            background: hsl(var(--surface-2));
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            border: 1px solid hsl(var(--border));
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .order-header h4 {
+            margin: 0;
+            color: hsl(var(--text-primary));
+        }
+        
+        .order-status {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .order-status.success {
+            background: hsl(var(--success) / 0.1);
+            color: hsl(var(--success));
+        }
+        
+        .order-status.warning {
+            background: hsl(var(--warning) / 0.1);
+            color: hsl(var(--warning));
+        }
+        
+        .order-status.error {
+            background: hsl(var(--error) / 0.1);
+            color: hsl(var(--error));
+        }
+        
+        .order-info {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .order-info p {
+            margin-bottom: var(--spacing-xs);
+            color: hsl(var(--text-secondary));
+        }
+        
+        .order-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .order-item {
+            background: hsl(var(--surface-3));
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            color: hsl(var(--text-secondary));
+        }
+        
+        .order-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .btn-sm {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: var(--font-size-sm);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="../index.html">
+                        <h1>FishShop</h1>
+                    </a>
+                </div>
+
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="../index.html" class="nav-link">Главная</a></li>
+                        <li><a href="catalog.html" class="nav-link">Каталог</a></li>
+                        <li><a href="about.html" class="nav-link">О нас</a></li>
+                    </ul>
+                </nav>
+
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="Поиск товаров...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="profile-dropdown" id="profile-dropdown">
+                        <button class="profile-btn" id="profile-btn">
+                            <i class="fas fa-user"></i>
+                            <span id="profile-btn-text">Профиль</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu" id="dropdown-menu">
+                            <div class="auth-options" id="auth-options">
+                                <a href="#" id="login-option">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                    Войти
+                                </a>
+                                <a href="#" id="register-option">
+                                    <i class="fas fa-user-plus"></i>
+                                    Регистрация
+                                </a>
+                            </div>
+                            <div class="user-options" id="user-options" style="display: none;">
+                                <a href="profile.html" id="profile-link">
+                                    <i class="fas fa-user"></i>
+                                    Личный кабинет
+                                </a>
+                                <a href="#" id="logout-option">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Выйти
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="cart-btn" id="cart-btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cart-count">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <div class="profile-content">
+                <div class="profile-sidebar">
+                    <h3>Личный кабинет</h3>
+                    <nav class="profile-nav">
+                        <a href="#info" class="active">
+                            <i class="fas fa-user"></i>
+                            Личная информация
+                        </a>
+                        <a href="#wishlist">
+                            <i class="fas fa-heart"></i>
+                            Избранное
+                        </a>
+                        <a href="#orders">
+                            <i class="fas fa-receipt"></i>
+                            История заказов
+                        </a>
+                    </nav>
+                </div>
+                
+                <div class="profile-main">
+                    <!-- Personal Info Section -->
+                    <div id="profile-info" class="profile-section active">
+                        <h2>Личная информация</h2>
+                        <form id="profile-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profile-firstName">Имя</label>
+                                    <input type="text" id="profile-firstName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-lastName">Фамилия</label>
+                                    <input type="text" id="profile-lastName" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-email">Email</label>
+                                <input type="email" id="profile-email" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Сохранить изменения
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Wishlist Section -->
+                    <div id="profile-wishlist" class="profile-section">
+                        <h2>Избранное</h2>
+                        <div class="products-grid" id="wishlist-products-grid">
+                            <!-- Wishlist products will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Orders Section -->
+                    <div id="profile-orders" class="profile-section">
+                        <h2>История заказов</h2>
+                        <div id="orders-container">
+                            <!-- Orders will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>FishShop</h3>
+                    <p>Лучшие рыболовные товары для профессионалов и любителей.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Каталог</h3>
+                    <ul>
+                        <li><a href="catalog.html?category=1">Удочки</a></li>
+                        <li><a href="catalog.html?category=2">Катушки</a></li>
+                        <li><a href="catalog.html?category=3">Приманки</a></li>
+                        <li><a href="catalog.html?category=4">Лески и шнуры</a></li>
+                        <li><a href="catalog.html?category=5">Одежда</a></li>
+                        <li><a href="catalog.html?category=6">Аксессуары</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Информация</h3>
+                    <ul>
+                        <li><a href="about.html">О нас</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Контакты</h3>
+                    <p><i class="fas fa-phone"></i> 7 (999) 999-99-99</p>
+                    <p><i class="fas fa-envelope"></i> info@fishshop.ru</p>
+                    <p><i class="fas fa-map-marker-alt"></i> г. Мирный, ул. Рыболовная, 123</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 FishShop. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modals -->
+    <!-- Cart Modal - ПОЛНАЯ ВЕРСИЯ -->
+    <div class="modal" id="cart-modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-content" style="background-color: #fefefe; margin: 5% auto; padding: 0; border: none; border-radius: 8px; width: 90%; max-width: 600px; max-height: 80vh; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+            
+            <!-- Header -->
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #eee; background: #f8f9fa;">
+                <h2 style="margin: 0; font-size: 24px; color: #333;">
+                    <i class="fas fa-shopping-cart" style="margin-right: 10px; color: #2d5a2d;"></i>
+                    Корзина покупок
+                </h2>
+                <span class="modal-close" id="cart-modal-close" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; padding: 0 10px;">&times;</span>
+            </div>
+            
+            <!-- Body -->
+            <div class="modal-body" id="cart-modal-body" style="padding: 20px; max-height: 400px; overflow-y: auto;">
+                <div class="cart-empty" style="text-align: center; padding: 40px; color: #666;">
+                    <i class="fas fa-shopping-cart" style="font-size: 60px; margin-bottom: 20px; color: #ddd;"></i>
+                    <h3 style="margin-bottom: 10px; color: #666;">Корзина пуста</h3>
+                    <p style="color: #999;">Добавьте товары в корзину</p>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-top: 1px solid #eee; background: #f8f9fa;">
+                <div class="cart-total" style="font-size: 18px; font-weight: bold;">
+                    <span class="total-label" style="color: #666;">Итого: </span>
+                    <span class="total-amount" id="cart-total-amount" style="color: #2d5a2d; font-size: 20px;">0 ₽</span>
+                </div>
+                <div class="cart-actions" style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" id="clear-cart" 
+                            style="padding: 12px 20px; border: 1px solid #ddd; background: #f8f9fa; color: #666; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s ease;"
+                            onmouseover="this.style.background='#e9ecef'" 
+                            onmouseout="this.style.background='#f8f9fa'">
+                        <i class="fas fa-trash" style="margin-right: 8px;"></i>
+                        Очистить корзину
+                    </button>
+                    <button class="btn btn-primary" id="checkout-btn" 
+                            style="padding: 12px 24px; background: #2d5a2d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease;"
+                            onmouseover="this.style.background='#1e3d1e'" 
+                            onmouseout="this.style.background='#2d5a2d'">
+                        <i class="fas fa-credit-card" style="margin-right: 8px;"></i>
+                        Оформить заказ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../data/categories.js"></script>
+    <script src="../data/products.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/cart.js"></script>
+    <script src="../js/search.js"></script>
+    <script src="../js/catalog.js"></script>
+    <script src="../js/profile.js"></script>
+    
+    <script>
+        // Initialize profile page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProfilePage();
+        });
+    </script>
+</body>
+</html>

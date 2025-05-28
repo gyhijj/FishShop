@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Контакты - FishShop</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/header.css">
+    <link rel="stylesheet" href="../css/footer.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .contact-content {
+            padding: var(--spacing-2xl) 0;
+        }
+        
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-2xl);
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .contact-info {
+            background: hsl(var(--surface));
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            border: 1px solid hsl(var(--border));
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .contact-item i {
+            color: hsl(var(--primary-color));
+            font-size: var(--font-size-lg);
+            width: 24px;
+            text-align: center;
+            margin-top: var(--spacing-xs);
+        }
+        
+        .contact-item h3 {
+            margin-bottom: var(--spacing-xs);
+            color: hsl(var(--text-primary));
+        }
+        
+        .contact-item p {
+            color: hsl(var(--text-secondary));
+            margin: 0;
+        }
+        
+        .contact-form {
+            background: hsl(var(--surface));
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            border: 1px solid hsl(var(--border));
+        }
+        
+        .contact-form h2 {
+            margin-bottom: var(--spacing-lg);
+            color: hsl(var(--text-primary));
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .working-hours {
+            background: hsl(var(--surface-2));
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .working-hours h3 {
+            margin-bottom: var(--spacing-md);
+            color: hsl(var(--text-primary));
+        }
+        
+        .hours-list {
+            list-style: none;
+        }
+        
+        .hours-list li {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-sm);
+            color: hsl(var(--text-secondary));
+        }
+        
+        .hours-list li:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <a href="../index.html">
+                        <h1>FishShop</h1>
+                    </a>
+                </div>
+
+                <nav class="nav">
+                    <ul class="nav-list">
+                        <li><a href="../index.html" class="nav-link">Главная</a></li>
+                        <li><a href="catalog.html" class="nav-link">Каталог</a></li>
+                        <li><a href="about.html" class="nav-link">О нас</a></li>
+                        <li><a href="contact.html" class="nav-link active">Контакты</a></li>
+                    </ul>
+                </nav>
+
+                <div class="header-actions">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="Поиск товаров...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="profile-dropdown" id="profile-dropdown">
+                        <button class="profile-btn" id="profile-btn">
+                            <i class="fas fa-user"></i>
+                            <span id="profile-btn-text">Профиль</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu" id="dropdown-menu">
+                            <div class="auth-options" id="auth-options">
+                                <a href="#" id="login-option">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                    Войти
+                                </a>
+                                <a href="#" id="register-option">
+                                    <i class="fas fa-user-plus"></i>
+                                    Регистрация
+                                </a>
+                            </div>
+                            <div class="user-options" id="user-options" style="display: none;">
+                                <a href="profile.html" id="profile-link">
+                                    <i class="fas fa-user"></i>
+                                    Личный кабинет
+                                </a>
+                                <a href="#" id="logout-option">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Выйти
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="cart-btn" id="cart-btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cart-count">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <div class="contact-content">
+                <h1>Контакты</h1>
+                <div class="contact-grid">
+                    <div class="contact-info">
+                        <h2>Свяжитесь с нами</h2>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <div>
+                                <h3>Телефон</h3>
+                                <p>7 (999) 999-99-99</p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <h3>Email</h3>
+                                <p>info@fishshop.ru</p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <h3>Адрес</h3>
+                                <p>г. Мирный, ул. Рыболовная, 123</p>
+                            </div>
+                        </div>
+                        
+                        <div class="working-hours">
+                            <h3>Часы работы</h3>
+                            <ul class="hours-list">
+                                <li>
+                                    <span>Понедельник - Пятница</span>
+                                    <span>9:00 - 18:00</span>
+                                </li>
+                                <li>
+                                    <span>Суббота</span>
+                                    <span>10:00 - 16:00</span>
+                                </li>
+                                <li>
+                                    <span>Воскресенье</span>
+                                    <span>Выходной</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-form">
+                        <h2>Напишите нам</h2>
+                        <form id="contact-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="contact-name">Имя</label>
+                                    <input type="text" id="contact-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contact-email">Email</label>
+                                    <input type="email" id="contact-email" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-subject">Тема</label>
+                                <input type="text" id="contact-subject" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-message">Сообщение</label>
+                                <textarea id="contact-message" required placeholder="Ваше сообщение..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Отправить сообщение
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>FishShop</h3>
+                    <p>Лучшие рыболовные товары для профессионалов и любителей.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Каталог</h3>
+                    <ul>
+                        <li><a href="#" onclick="showCategoryProducts(1)">Удочки</a></li>
+                        <li><a href="#" onclick="showCategoryProducts(2)">Катушки</a></li>
+                        <li><a href="#" onclick="showCategoryProducts(3)">Приманки</a></li>
+                        <li><a href="#" onclick="showCategoryProducts(4)">Лески и шнуры</a></li>
+                        <li><a href="#" onclick="showCategoryProducts(5)">Одежда</a></li>
+                        <li><a href="#" onclick="showCategoryProducts(6)">Аксессуары</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Информация</h3>
+                    <ul>
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="contact.html">Контакты</a></li>
+                        <li><a href="#">Доставка</a></li>
+                        <li><a href="#">Гарантия</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Контакты</h3>
+                    <p><i class="fas fa-phone"></i> 7 (999) 999-99-99</p>
+                    <p><i class="fas fa-envelope"></i> info@fishshop.ru</p>
+                    <p><i class="fas fa-map-marker-alt"></i> г. Мирный, ул. Рыболовная, 123</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 FishShop. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modals -->
+    <!-- Cart Modal - ПОЛНАЯ ВЕРСИЯ -->
+    <div class="modal" id="cart-modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-content" style="background-color: #fefefe; margin: 5% auto; padding: 0; border: none; border-radius: 8px; width: 90%; max-width: 600px; max-height: 80vh; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+            
+            <!-- Header -->
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #eee; background: #f8f9fa;">
+                <h2 style="margin: 0; font-size: 24px; color: #333;">
+                    <i class="fas fa-shopping-cart" style="margin-right: 10px; color: #2d5a2d;"></i>
+                    Корзина покупок
+                </h2>
+                <span class="modal-close" id="cart-modal-close" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; padding: 0 10px;">&times;</span>
+            </div>
+            
+            <!-- Body -->
+            <div class="modal-body" id="cart-modal-body" style="padding: 20px; max-height: 400px; overflow-y: auto;">
+                <div class="cart-empty" style="text-align: center; padding: 40px; color: #666;">
+                    <i class="fas fa-shopping-cart" style="font-size: 60px; margin-bottom: 20px; color: #ddd;"></i>
+                    <h3 style="margin-bottom: 10px; color: #666;">Корзина пуста</h3>
+                    <p style="color: #999;">Добавьте товары в корзину</p>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-top: 1px solid #eee; background: #f8f9fa;">
+                <div class="cart-total" style="font-size: 18px; font-weight: bold;">
+                    <span class="total-label" style="color: #666;">Итого: </span>
+                    <span class="total-amount" id="cart-total-amount" style="color: #2d5a2d; font-size: 20px;">0 ₽</span>
+                </div>
+                <div class="cart-actions" style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" id="clear-cart" 
+                            style="padding: 12px 20px; border: 1px solid #ddd; background: #f8f9fa; color: #666; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s ease;"
+                            onmouseover="this.style.background='#e9ecef'" 
+                            onmouseout="this.style.background='#f8f9fa'">
+                        <i class="fas fa-trash" style="margin-right: 8px;"></i>
+                        Очистить корзину
+                    </button>
+                    <button class="btn btn-primary" id="checkout-btn" 
+                            style="padding: 12px 24px; background: #2d5a2d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease;"
+                            onmouseover="this.style.background='#1e3d1e'" 
+                            onmouseout="this.style.background='#2d5a2d'">
+                        <i class="fas fa-credit-card" style="margin-right: 8px;"></i>
+                        Оформить заказ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Вход</h2>
+                <span class="modal-close" id="login-modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Пароль</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Войти</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <p>Нет аккаунта? <a href="#" id="show-register">Зарегистрироваться</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="register-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Регистрация</h2>
+                <span class="modal-close" id="register-modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="register-firstName">Имя</label>
+                        <input type="text" id="register-firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-lastName">Фамилия</label>
+                        <input type="text" id="register-lastName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Пароль</label>
+                        <input type="password" id="register-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <p>Уже есть аккаунт? <a href="#" id="show-login">Войти</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../data/categories.js"></script>
+    <script src="../data/products.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/cart.js"></script>
+    <script src="../js/search.js"></script>
+    
+    <script>
+        // Handle contact form submission
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('contact-name').value;
+            const email = document.getElementById('contact-email').value;
+            const subject = document.getElementById('contact-subject').value;
+            const message = document.getElementById('contact-message').value;
+            
+            // Simulate form submission
+            showNotification('Сообщение отправлено! Мы свяжемся с вами в ближайшее время.', 'success');
+            
+            // Clear form
+            this.reset();
+        });
+    </script>
+</body>
+</html>
