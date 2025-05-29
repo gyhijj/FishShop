@@ -1346,5 +1346,7 @@ function addProduct(name, price, description, imageUrl) {
     });
 }
 
-// Export for Node.js
-module.exports = products;
+// Export for Node.js (only if module exists)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = products;
+}

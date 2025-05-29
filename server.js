@@ -72,7 +72,7 @@ async function initDatabase() {
       CREATE TABLE IF NOT EXISTS orders (
         id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL,
-        total_price DECIMAL(10,2) NOT NULL,
+        total DECIMAL(10,2) NOT NULL,
         items TEXT NOT NULL,
         status VARCHAR(50) DEFAULT 'pending',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -200,34 +200,34 @@ async function handleApiRequest(req, res, pathname) {
     return;
   }
 
-  /// Обновление пользователя - PUT
+  // Update user profile - PUT
   if (pathname.match(/^\/api\/users\/\d+$/) && req.method === 'PUT') {
-    const userId = parseInt(pathname.split('/')[3]);
+    const userId = pathname.split('/')[3];
     let body = '';
     req.on('data', chunk => body += chunk);
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const { firstName, lastName, email } = JSON.parse(body);
         
-        // Находим пользователя в массиве
-        const userIndex = global.tempUsers.findIndex(u => u.id === userId);
-        if (userIndex !== -1) {
-          global.tempUsers[userIndex].firstName = firstName;
-          global.tempUsers[userIndex].first_name = firstName;
-          global.tempUsers[userIndex].lastName = lastName;
-          global.tempUsers[userIndex].last_name = lastName;
-          global.tempUsers[userIndex].email = email;
-          
-          res.writeHead(200);
-          res.end(JSON.stringify({ 
-            success: true, 
-            user: global.tempUsers[userIndex],
-            message: 'Профиль обновлен' 
-          }));
-        } else {
+        const client = await pool.connect();
+        const result = await client.query(
+          'UPDATE users SET first_name = $1, last_name = $2, email = $3 WHERE id = $4 RETURNING id, email, first_name, last_name',
+          [firstName, lastName, email, userId]
+        );
+        client.release();
+        
+        if (result.rows.length === 0) {
           res.writeHead(404);
           res.end(JSON.stringify({ error: 'Пользователь не найден' }));
+          return;
         }
+        
+        res.writeHead(200);
+        res.end(JSON.stringify({ 
+          success: true, 
+          user: result.rows[0],
+          message: 'Профиль обновлен' 
+        }));
       } catch (error) {
         res.writeHead(500);
         res.end(JSON.stringify({ error: 'Ошибка обновления профиля' }));
@@ -341,27 +341,58 @@ async function handleApiRequest(req, res, pathname) {
     return;
   }
 
+  // Handle preflight requests for wishlist
+  if (pathname.match(/^\/api\/wishlist\/\d+$/) && req.method === 'OPTIONS') {
+    res.writeHead(200, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    });
+    res.end();
+    return;
+  }
+
   // Add to wishlist
   if (pathname.match(/^\/api\/wishlist\/\d+$/) && req.method === 'POST') {
     const userId = pathname.split('/')[3];
+    console.log('POST wishlist request for user:', userId);
     let body = '';
     req.on('data', chunk => body += chunk);
     req.on('end', async () => {
       try {
+        console.log('Received body:', body);
         const { productId } = JSON.parse(body);
+        console.log('Parsed productId:', productId, 'userId:', userId);
         
         const client = await pool.connect();
-        await client.query(
-          'INSERT INTO wishlist (user_id, product_id) VALUES ($1, $2) ON CONFLICT (user_id, product_id) DO NOTHING',
+        console.log('Database connected for wishlist insert');
+        
+        // Проверяем, есть ли уже запись
+        const existingResult = await client.query(
+          'SELECT id FROM wishlist WHERE user_id = $1 AND product_id = $2',
           [userId, productId]
         );
+        
+        if (existingResult.rows.length === 0) {
+          // Добавляем только если записи нет
+          const result = await client.query(
+            'INSERT INTO wishlist (user_id, product_id) VALUES ($1, $2) RETURNING *',
+            [userId, productId]
+          );
+          console.log('Insert result:', result.rows);
+        } else {
+          console.log('Item already in wishlist');
+        }
+
         client.release();
+        console.log('Database connection released');
         
         res.writeHead(200);
         res.end(JSON.stringify({ success: true, message: 'Добавлено в избранное' }));
       } catch (error) {
+        console.error('Ошибка wishlist POST:', error);
         res.writeHead(500);
-        res.end(JSON.stringify({ error: 'Ошибка избранного' }));
+        res.end(JSON.stringify({ error: 'Ошибка избранного', details: error.message }));
       }
     });
     return;
@@ -394,14 +425,15 @@ async function handleApiRequest(req, res, pathname) {
     req.on('data', chunk => body += chunk);
     req.on('end', async () => {
       try {
-        const { items, totalPrice } = JSON.parse(body);
+        const { items, total, totalPrice } = JSON.parse(body);
+        const finalTotal = total || totalPrice;
         
         const client = await pool.connect();
         
         // Create order
         const orderResult = await client.query(
-          'INSERT INTO orders (user_id, total_price, items, status) VALUES ($1, $2, $3, $4) RETURNING *',
-          [userId, totalPrice, JSON.stringify(items), 'pending']
+          'INSERT INTO orders (user_id, total, items, status) VALUES ($1, $2, $3, $4) RETURNING *',
+          [userId, finalTotal, JSON.stringify(items), 'pending']
         );
         
         // Clear cart after successful order
@@ -416,8 +448,11 @@ async function handleApiRequest(req, res, pathname) {
           message: 'Заказ успешно создан' 
         }));
       } catch (error) {
+        console.error('❌ Ошибка создания заказа:', error);
+        console.error('Body:', body);
+        console.error('UserId:', userId);
         res.writeHead(500);
-        res.end(JSON.stringify({ error: 'Ошибка создания заказа' }));
+        res.end(JSON.stringify({ error: 'Ошибка создания заказа: ' + error.message }));
       }
     });
     return;
@@ -512,14 +547,11 @@ server.listen(PORT, '0.0.0.0', async () => {
   const dbReady = await initDatabase();
   if (dbReady) {
     console.log(`🚀 PostgreSQL база данных готова!`);
-  } else {
-    console.log(`⚠️ Сервер работает без базы данных`);
+    console.log(`📊 API готов для:`);
+    console.log(`   ✓ Профили пользователей с реальными данными`);
+    console.log(`   ✓ История заказов из базы данных`);
+    console.log(`   ✓ Корзина покупок`);
+    console.log(`   ✓ Избранные товары`);
+    console.log(`   ✓ ${products.length} товар в ${categories.length} категориях`);
   }
-  
-  console.log(`📊 API готов для:`);
-  console.log(`   ✓ Профили пользователей с реальными данными`);
-  console.log(`   ✓ История заказов из базы данных`);
-  console.log(`   ✓ Корзина покупок`);
-  console.log(`   ✓ Избранные товары`);
-  console.log(`   ✓ 61 товар в 6 категориях`);
 });

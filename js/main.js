@@ -121,6 +121,19 @@ function setupEventListeners() {
             }
         }
     });
+
+    // Setup event listeners for wishlist buttons dynamically
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.wishlist-btn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            const btn = e.target.closest('.wishlist-btn');
+            const productId = parseInt(btn.dataset.productId || btn.getAttribute('onclick')?.match(/\d+/)?.[0]);
+            if (productId) {
+                toggleWishlist(productId);
+            }
+        }
+    });
 }
 
 // Show specific page
@@ -228,6 +241,9 @@ async function loadFeaturedProducts() {
             const productCard = createProductCard(product);
             featuredContainer.appendChild(productCard);
         });
+
+        // Update wishlist display after creating cards
+        await updateWishlistDisplay();
     } catch (error) {
         console.error('Ошибка загрузки товаров:', error);
         featuredContainer.innerHTML = '<p>Загрузка товаров...</p>';
@@ -240,13 +256,10 @@ function createProductCard(product) {
     card.className = 'product-card';
     card.onclick = () => showProduct(product.id);
     
-    const isInWishlist = getWishlist().includes(product.id);
-    
     card.innerHTML = `
         <div class="product-image">
             <img src="${product.images[0]}" alt="${product.name}" loading="lazy">
-            <button class="wishlist-btn ${isInWishlist ? 'active' : ''}" 
-                    onclick="event.stopPropagation(); toggleWishlist(${product.id})">
+            <button class="wishlist-btn" data-product-id="${product.id}">
                 <i class="fas fa-heart"></i>
             </button>
         </div>
@@ -272,14 +285,31 @@ function createProductCard(product) {
     return card;
 }
 
-
-
 // Format price
 function formatPrice(price) {
-    return new Intl.NumberFormat('ru-RU', {
-        style: 'currency',
-        currency: 'RUB'
-    }).format(price);
+    return price.toLocaleString('ru-RU') + ' ₽';
+}
+
+// Generate stars for rating
+function generateStars(rating) {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+    let stars = '';
+    
+    for (let i = 0; i < fullStars; i++) {
+        stars += '<i class="fas fa-star"></i>';
+    }
+    
+    if (hasHalfStar) {
+        stars += '<i class="fas fa-star-half-alt"></i>';
+    }
+    
+    const remainingStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    for (let i = 0; i < remainingStars; i++) {
+        stars += '<i class="far fa-star"></i>';
+    }
+    
+    return stars;
 }
 
 // Get category name by ID
@@ -288,15 +318,230 @@ function getCategoryName(categoryId) {
     return category ? category.name : 'Неизвестная категория';
 }
 
-// Get wishlist from localStorage
-function getWishlist() {
-    return JSON.parse(localStorage.getItem('wishlist') || '[]');
+// Show product modal
+async function showProduct(productId) {
+    try {
+        const response = await fetch('/api/products');
+        const products = await response.json();
+        const product = products.find(p => p.id === productId);
+        
+        if (!product) {
+            showNotification('Товар не найден', 'error');
+            return;
+        }
+        
+        const modal = document.getElementById('product-modal');
+        const title = document.getElementById('product-modal-title');
+        const body = document.getElementById('product-modal-body');
+        
+        if (!modal || !title || !body) return;
+        
+        title.textContent = product.name;
+        
+        const oldPriceHTML = product.oldPrice ? `<span class="old-price">${formatPrice(product.oldPrice)}</span>` : '';
+        const isNew = product.isNew ? '<span class="product-badge new">Новинка</span>' : '';
+        const isSale = product.isSale ? '<span class="product-badge sale">Скидка</span>' : '';
+        
+        body.innerHTML = `
+            <div class="product-modal-content">
+                <div class="product-modal-image">
+                    <img src="${product.images[0]}" alt="${product.name}" id="main-product-image">
+                    ${isNew}
+                    ${isSale}
+                    <div class="product-thumbnails">
+                        ${product.images.map((img, index) => 
+                            `<img src="${img}" alt="${product.name}" class="thumbnail ${index === 0 ? 'active' : ''}" 
+                                 onclick="changeMainImage('${img}', this)">`
+                        ).join('')}
+                    </div>
+                </div>
+                <div class="product-modal-info">
+                    <div class="product-rating">
+                        ${generateStars(product.rating)}
+                        <span class="rating-count">(${product.ratingCount})</span>
+                    </div>
+                    <div class="product-price">
+                        <span class="price">${formatPrice(product.price)}</span>
+                        ${oldPriceHTML}
+                    </div>
+                    <p class="product-description">${product.description}</p>
+                    <div class="product-actions">
+                        <button class="btn btn-primary" onclick="addToCart(${product.id})">
+                            <i class="fas fa-shopping-cart"></i>
+                            В корзину
+                        </button>
+                        <button class="btn btn-secondary wishlist-btn" id="modal-wishlist-btn-${product.id}"
+                                data-product-id="${product.id}">
+                            <i class="fas fa-heart"></i>
+                            <span id="wishlist-text-${product.id}">В избранное</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        modal.style.display = 'block';
+        
+        // Update wishlist button state after modal is shown
+        const wishlist = await getWishlist();
+        const isInWishlist = wishlist.includes(product.id);
+        const wishlistBtn = document.getElementById(`modal-wishlist-btn-${product.id}`);
+        const wishlistText = document.getElementById(`wishlist-text-${product.id}`);
+        
+        if (wishlistBtn && wishlistText) {
+            if (isInWishlist) {
+                wishlistBtn.classList.add('active');
+                wishlistText.textContent = 'В избранном';
+            } else {
+                wishlistBtn.classList.remove('active');
+                wishlistText.textContent = 'В избранное';
+            }
+        }
+        
+    } catch (error) {
+        console.error('Ошибка загрузки товара:', error);
+        showNotification('Ошибка загрузки товара', 'error');
+    }
+}
+
+// Change main image in product modal
+function changeMainImage(imageSrc, thumbnail) {
+    const mainImage = document.getElementById('main-product-image');
+    if (mainImage) {
+        mainImage.src = imageSrc;
+    }
+    
+    // Update active thumbnail
+    document.querySelectorAll('.thumbnail').forEach(thumb => thumb.classList.remove('active'));
+    thumbnail.classList.add('active');
+}
+
+// Toggle wishlist - database version
+async function toggleWishlist(productId) {
+    // Check authentication
+    const user = getCurrentUser();
+    if (!user) {
+        showNotification('Войдите в аккаунт, чтобы добавить товар в избранное', 'warning');
+        return;
+    }
+    
+    // Load product from API
+    let product = null;
+    try {
+        const response = await fetch('/api/products');
+        const products = await response.json();
+        product = products.find(p => p.id === productId);
+        if (!product) {
+            showNotification('Товар не найден', 'error');
+            return;
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки товаров:', error);
+        showNotification('Ошибка загрузки данных о товаре', 'error');
+        return;
+    }
+    
+    try {
+        const wishlist = await getWishlist();
+        const isInWishlist = wishlist.includes(productId);
+        
+        if (!isInWishlist) {
+            // Add to wishlist
+            const response = await fetch(`/api/wishlist/${user.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ productId })
+            });
+            
+            if (response.ok) {
+                showNotification(`${product.name} добавлен в избранное`, 'success');
+            } else {
+                const errorData = await response.text();
+                console.error('Ошибка добавления в избранное:', response.status, errorData);
+                throw new Error(`Ошибка сервера: ${response.status}`);
+            }
+        } else {
+            // Remove from wishlist
+            const response = await fetch(`/api/wishlist/${user.id}/${productId}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                showNotification(`${product.name} удален из избранного`, 'info');
+            } else {
+                const errorData = await response.text();
+                console.error('Ошибка удаления из избранного:', response.status, errorData);
+                throw new Error(`Ошибка сервера: ${response.status}`);
+            }
+        }
+        
+        // Update display
+        await updateWishlistDisplay();
+        
+    } catch (error) {
+        console.error('Ошибка при работе с избранным:', error);
+        showNotification('Ошибка при обновлении избранного', 'error');
+    }
+}
+
+// Get wishlist - database version
+async function getWishlist() {
+    const user = getCurrentUser();
+    if (!user) return [];
+    
+    try {
+        const response = await fetch(`/api/wishlist/${user.id}`);
+        if (response.ok) {
+            const data = await response.json();
+            return data.map(item => item.productId);
+        }
+        return [];
+    } catch (error) {
+        console.error('Ошибка получения избранного:', error);
+        return [];
+    }
+}
+
+// Update wishlist display
+async function updateWishlistDisplay() {
+    const wishlist = await getWishlist();
+    
+    // Update wishlist buttons in product cards
+    document.querySelectorAll('.wishlist-btn').forEach(btn => {
+        const productId = parseInt(btn.dataset.productId || btn.getAttribute('onclick')?.match(/\d+/)?.[0]);
+        const isInWishlist = wishlist.includes(productId);
+        
+        if (isInWishlist) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+        
+        // Update modal wishlist button text if it exists
+        const wishlistText = document.getElementById(`wishlist-text-${productId}`);
+        if (wishlistText) {
+            wishlistText.textContent = isInWishlist ? 'В избранном' : 'В избранное';
+        }
+    });
 }
 
 // Get cart from localStorage
 function getCart() {
     const cartJson = localStorage.getItem('cart');
     return cartJson ? JSON.parse(cartJson) : [];
+}
+
+// Handle search
+function handleSearch() {
+    const searchInput = document.getElementById('search-input');
+    if (!searchInput) return;
+    
+    const query = searchInput.value.trim();
+    if (query) {
+        window.location.href = `pages/catalog.html?search=${encodeURIComponent(query)}`;
+    }
 }
 
 // Debounce function

@@ -38,5 +38,7 @@ const categories = [
     }
 ];
 
-// Export for Node.js
-module.exports = categories;
+// Export for Node.js (only if module exists)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = categories;
+}
