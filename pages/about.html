@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/header.css">
     <link rel="stylesheet" href="../css/footer.css">
+    <link rel="stylesheet" href="../css/modal.css">
     <link rel="stylesheet" href="../css/responsive.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -25,6 +26,7 @@
         .about-text h3 {
             margin-top: var(--spacing-xl);
             margin-bottom: var(--spacing-md);
+            color: hsl(var(--primary-color));
         }
         
         .about-text ul {
@@ -58,6 +60,12 @@
             text-align: center;
             border: 1px solid hsl(var(--border));
             box-shadow: var(--shadow-sm);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
         
         .stat-card i {
@@ -76,6 +84,17 @@
             color: hsl(var(--text-secondary));
             margin: 0;
         }
+        
+        @media (max-width: 768px) {
+            .about-grid {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-xl);
+            }
+            
+            .about-stats {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -92,6 +111,7 @@
                 <nav class="nav">
                     <ul class="nav-list">
                         <li><a href="../index.html" class="nav-link">Главная</a></li>
+                        <li><a href="reviews.html" class="nav-link">Отзывы</a></li>
                         <li><a href="catalog.html" class="nav-link">Каталог</a></li>
                         <li><a href="about.html" class="nav-link active">О нас</a></li>
                     </ul>
@@ -165,7 +185,7 @@
                     <div class="about-stats">
                         <div class="stat-card">
                             <i class="fas fa-users"></i>
-                            <h3>0</h3>
+                            <h3>100+</h3>
                             <p>Клиентов</p>
                         </div>
                         <div class="stat-card">
@@ -175,8 +195,8 @@
                         </div>
                         <div class="stat-card">
                             <i class="fas fa-calendar"></i>
-                            <h3>0</h3>
-                            <p>Лет опыта</p>
+                            <h3>1</h3>
+                            <p>Год опыта</p>
                         </div>
                         <div class="stat-card">
                             <i class="fas fa-truck"></i>
@@ -187,7 +207,7 @@
                 </div>
             </div>
         </div>
-    
+    </main>
 
     <!-- Footer -->
     <footer class="footer">
@@ -231,55 +251,6 @@
         </div>
     </footer>
 
-    <!-- Modals -->
-    <!-- Cart Modal - ПОЛНАЯ ВЕРСИЯ -->
-    <div class="modal" id="cart-modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
-        <div class="modal-content" style="background-color: #fefefe; margin: 5% auto; padding: 0; border: none; border-radius: 8px; width: 90%; max-width: 600px; max-height: 80vh; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
-            
-            <!-- Header -->
-            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #eee; background: #f8f9fa;">
-                <h2 style="margin: 0; font-size: 24px; color: #333;">
-                    <i class="fas fa-shopping-cart" style="margin-right: 10px; color: #2d5a2d;"></i>
-                    Корзина покупок
-                </h2>
-                <span class="modal-close" id="cart-modal-close" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; padding: 0 10px;">&times;</span>
-            </div>
-            
-            <!-- Body -->
-            <div class="modal-body" id="cart-modal-body" style="padding: 20px; max-height: 400px; overflow-y: auto;">
-                <div class="cart-empty" style="text-align: center; padding: 40px; color: #666;">
-                    <i class="fas fa-shopping-cart" style="font-size: 60px; margin-bottom: 20px; color: #ddd;"></i>
-                    <h3 style="margin-bottom: 10px; color: #666;">Корзина пуста</h3>
-                    <p style="color: #999;">Добавьте товары в корзину</p>
-                </div>
-            </div>
-            
-            <!-- Footer -->
-            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-top: 1px solid #eee; background: #f8f9fa;">
-                <div class="cart-total" style="font-size: 18px; font-weight: bold;">
-                    <span class="total-label" style="color: #666;">Итого: </span>
-                    <span class="total-amount" id="cart-total-amount" style="color: #2d5a2d; font-size: 20px;">0 ₽</span>
-                </div>
-                <div class="cart-actions" style="display: flex; gap: 10px;">
-                    <button class="btn btn-secondary" id="clear-cart" 
-                            style="padding: 12px 20px; border: 1px solid #ddd; background: #f8f9fa; color: #666; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s ease;"
-                            onmouseover="this.style.background='#e9ecef'" 
-                            onmouseout="this.style.background='#f8f9fa'">
-                        <i class="fas fa-trash" style="margin-right: 8px;"></i>
-                        Очистить корзину
-                    </button>
-                    <button class="btn btn-primary" id="checkout-btn" 
-                            style="padding: 12px 24px; background: #2d5a2d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease;"
-                            onmouseover="this.style.background='#1e3d1e'" 
-                            onmouseout="this.style.background='#2d5a2d'">
-                        <i class="fas fa-credit-card" style="margin-right: 8px;"></i>
-                        Оформить заказ
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Scripts -->
     <script src="../data/categories.js"></script>
     <script src="../data/products.js"></script>
@@ -287,5 +258,15 @@
     <script src="../js/auth.js"></script>
     <script src="../js/cart.js"></script>
     <script src="../js/search.js"></script>
+    
+    <script>
+        // Инициализация для страницы О нас
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация корзины
+            if (typeof initCart === 'function') {
+                initCart();
+            }
+        });
+    </script>
 </body>
 </html>

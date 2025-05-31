@@ -19,14 +19,14 @@ function setupAuthEventListeners() {
     // Profile dropdown toggle
     const profileBtn = document.getElementById('profile-btn');
     const dropdown = document.getElementById('dropdown-menu');
-    
+
     if (profileBtn && dropdown) {
         profileBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             dropdown.classList.toggle('show');
         });
-        
+
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!profileBtn.contains(e.target) && !dropdown.contains(e.target)) {
@@ -77,7 +77,7 @@ function setupAuthEventListeners() {
     // Modal switches
     const showRegisterLink = document.getElementById('show-register');
     const showLoginLink = document.getElementById('show-login');
-    
+
     if (showRegisterLink) {
         showRegisterLink.addEventListener('click', (e) => {
             e.preventDefault();
@@ -85,7 +85,7 @@ function setupAuthEventListeners() {
             showRegisterModal();
         });
     }
-    
+
     if (showLoginLink) {
         showLoginLink.addEventListener('click', (e) => {
             e.preventDefault();
@@ -97,11 +97,11 @@ function setupAuthEventListeners() {
     // Modal close buttons
     const loginModalClose = document.getElementById('login-modal-close');
     const registerModalClose = document.getElementById('register-modal-close');
-    
+
     if (loginModalClose) {
         loginModalClose.addEventListener('click', hideLoginModal);
     }
-    
+
     if (registerModalClose) {
         registerModalClose.addEventListener('click', hideRegisterModal);
     }
@@ -112,7 +112,7 @@ function updateAuthDisplay() {
     const profileBtnText = document.getElementById('profile-btn-text');
     const authOptions = document.getElementById('auth-options');
     const userOptions = document.getElementById('user-options');
-    
+
     if (currentUser) {
         // User is logged in
         if (profileBtnText) {
@@ -144,7 +144,7 @@ function showLoginModal() {
     if (modal) {
         modal.classList.add('show');
         modal.style.display = 'flex';
-        
+
         // Clear form
         const form = document.getElementById('login-form');
         if (form) {
@@ -168,7 +168,7 @@ function showRegisterModal() {
     if (modal) {
         modal.classList.add('show');
         modal.style.display = 'flex';
-        
+
         // Clear form
         const form = document.getElementById('register-form');
         if (form) {
@@ -189,10 +189,10 @@ function hideRegisterModal() {
 // Handle login form submission
 async function handleLoginForm(e) {
     e.preventDefault();
-    
+
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    
+
     try {
         // Send login request to API
         const response = await fetch('/api/auth/login', {
@@ -202,9 +202,9 @@ async function handleLoginForm(e) {
             },
             body: JSON.stringify({ email, password })
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             // Login successful
             currentUser = data.user;
@@ -212,11 +212,21 @@ async function handleLoginForm(e) {
             updateAuthDisplay();
             hideLoginModal();
             showNotification('Добро пожаловать!', 'success');
-            
+
             // Hide dropdown
             const dropdownMenu = document.getElementById('dropdown-menu');
             if (dropdownMenu) {
                 dropdownMenu.classList.remove('show');
+            }
+
+            // Dispatch event for other components to listen
+            document.dispatchEvent(new CustomEvent('userLoggedIn', { detail: currentUser }));
+
+            // Update reviews system if on reviews page
+            if (typeof window.reviewsSystem !== 'undefined' && window.reviewsSystem.updateAuthDisplay) {
+                setTimeout(() => {
+                    window.reviewsSystem.updateAuthDisplay();
+                }, 100);
             }
         } else {
             // Login failed
@@ -231,12 +241,12 @@ async function handleLoginForm(e) {
 // Handle register form submission
 async function handleRegisterForm(e) {
     e.preventDefault();
-    
+
     const firstName = document.getElementById('register-firstName').value;
     const lastName = document.getElementById('register-lastName').value;
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
-    
+
     try {
         // Send registration request to API
         const response = await fetch('/api/auth/register', {
@@ -246,22 +256,32 @@ async function handleRegisterForm(e) {
             },
             body: JSON.stringify({ firstName, lastName, email, password })
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             // Registration successful
             currentUser = data.user;
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            
+
             updateAuthDisplay();
             hideRegisterModal();
             showNotification('Регистрация успешна! Добро пожаловать!', 'success');
-            
+
             // Hide dropdown
             const dropdownMenu = document.getElementById('dropdown-menu');
             if (dropdownMenu) {
                 dropdownMenu.classList.remove('show');
+            }
+
+            // Dispatch event for other components to listen
+            document.dispatchEvent(new CustomEvent('userLoggedIn', { detail: currentUser }));
+
+            // Update reviews system if on reviews page
+            if (typeof window.reviewsSystem !== 'undefined' && window.reviewsSystem.updateAuthDisplay) {
+                setTimeout(() => {
+                    window.reviewsSystem.updateAuthDisplay();
+                }, 100);
             }
         } else {
             // Registration failed
@@ -279,11 +299,21 @@ function logout() {
     localStorage.removeItem('currentUser');
     updateAuthDisplay();
     showNotification('Вы вышли из аккаунта', 'info');
-    
+
     // Hide dropdown
     const dropdownMenu = document.getElementById('dropdown-menu');
     if (dropdownMenu) {
         dropdownMenu.classList.remove('show');
+    }
+
+    // Dispatch event for other components to listen
+    document.dispatchEvent(new CustomEvent('userLoggedOut'));
+
+    // Update reviews system if on reviews page
+    if (typeof window.reviewsSystem !== 'undefined' && window.reviewsSystem.updateAuthDisplay) {
+        setTimeout(() => {
+            window.reviewsSystem.updateAuthDisplay();
+        }, 100);
     }
 
      // Перенаправляем на главную страницу после небольшой задержки
@@ -296,7 +326,7 @@ function logout() {
             window.location.href = '/';
         }
     }, 1500);
-    
+
     // Clear cart if needed
     // localStorage.removeItem('cart');
     // updateCartDisplay();

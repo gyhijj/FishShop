@@ -79,6 +79,29 @@ async function initDatabase() {
       )
     `);
     
+     // Reviews table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        product_id INTEGER,
+        rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        title VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+     // Add author_name column if it doesn't exist
+    try {
+      await client.query(`
+        ALTER TABLE reviews ADD COLUMN IF NOT EXISTS author_name VARCHAR(255)
+      `);
+    } catch (error) {
+      // Column already exists or other error, continue
+    }
+    
+
     client.release();
     console.log('✅ База данных инициализирована');
     return true;
@@ -480,6 +503,98 @@ async function handleApiRequest(req, res, pathname) {
       res.writeHead(500);
       res.end(JSON.stringify({ error: 'Ошибка получения заказов' }));
     }
+    return;
+  }
+
+  // Get reviews
+  if (pathname === '/api/reviews' && req.method === 'GET') {
+    try {
+      const client = await pool.connect();
+      const result = await client.query(`
+        SELECT r.*, 
+                              COALESCE(r.author_name, CONCAT(u.first_name, ' ', u.last_name)) as author_name
+
+        FROM reviews r
+         LEFT JOIN users u ON r.user_id = u.id
+        ORDER BY r.created_at DESC
+      `);
+
+      client.release();
+        // Add product information to reviews
+      const reviewsWithProducts = result.rows.map(review => {
+        if (review.product_id) {
+          // Find product from products array
+          const product = products.find(p => p.id == review.product_id);
+          return {
+            ...review,
+            product_name: product ? product.name : null,
+            product: product
+          };
+        }
+        return review;
+      });
+      
+      
+      res.writeHead(200);
+       res.end(JSON.stringify(reviewsWithProducts));
+    } catch (error) {
+      console.error('Ошибка получения отзывов:', error);
+      res.writeHead(500);
+      res.end(JSON.stringify({ error: 'Ошибка получения отзывов' }));
+    }
+    return;
+  }
+  // Create review
+  if (pathname === '/api/reviews' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', async () => {
+      try {
+       const { userId, productId, rating, title, content, authorName } = JSON.parse(body);
+        
+        // Validate required fields
+        if (!userId || !rating || !title || !content) {
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: 'Все поля обязательны' }));
+          return;
+        }
+        
+        // Validate rating
+        if (rating < 1 || rating > 5) {
+          res.writeHead(400);
+          res.end(JSON.stringify({ error: 'Оценка должна быть от 1 до 5' }));
+          return;
+        }
+        
+        const client = await pool.connect();
+            
+        // Get user info for author name
+        // Use provided authorName or get from user table
+        let finalAuthorName = authorName;
+        if (!finalAuthorName) {
+            const userResult = await client.query('SELECT first_name, last_name FROM users WHERE id = $1', [userId]);
+            const user = userResult.rows[0];
+            finalAuthorName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Аноним' : 'Аноним';
+        }
+        
+        const result = await client.query(
+            'INSERT INTO reviews (user_id, product_id, rating, title, content, author_name) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+         [userId, productId || null, rating, title, content, finalAuthorName]
+        );
+        client.release();
+        
+        res.writeHead(200);
+        res.end(JSON.stringify({ 
+          success: true, 
+          review: result.rows[0],
+          message: 'Отзыв успешно добавлен' 
+        }));
+      } catch (error) {
+        console.error('Ошибка создания отзыва:', error);
+        res.writeHead(500);
+        res.end(JSON.stringify({ error: 'Ошибка создания отзыва' }));
+      }
+    });
     return;
   }
 

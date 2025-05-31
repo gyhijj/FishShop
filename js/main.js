@@ -563,21 +563,101 @@ function updateHistory(page) {
     history.replaceState({page}, '', url);
 }
 
+// Notification queue
+let notificationQueue = [];
+let currentNotifications = [];
+
+
 // Show notification
 function showNotification(message, type = 'info') {
+      const notification = {
+        message,
+        type,
+        id: Date.now() + Math.random()
+    };
+    
+    notificationQueue.push(notification);
+    processNotificationQueue();
+}
+// Process notification queue
+function processNotificationQueue() {
+    // If there are already 3 notifications, wait
+    if (currentNotifications.length >= 3) {
+        return;
+    }
+    
+    // If no notifications in queue, return
+    if (notificationQueue.length === 0) {
+        return;
+    }
+    
+    const notification = notificationQueue.shift();
+    showSingleNotification(notification);
+}
+// Show single notification
+function showSingleNotification(notificationData) {
     const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
+    notification.className = `notification ${notificationData.type}`;
+    notification.setAttribute('data-id', notificationData.id);
     notification.innerHTML = `
-        <i class="${getNotificationIcon(type)}"></i>
-        ${message}
+         <i class="${getNotificationIcon(notificationData.type)}"></i>
+        ${notificationData.message}
     `;
+
+     // Calculate position based on existing notifications
+    const topPosition = 20 + (currentNotifications.length * 80);
+    notification.style.top = `${topPosition}px`;
     
     document.body.appendChild(notification);
+    currentNotifications.push(notification);
     
+    // Remove notification after 3 seconds
     setTimeout(() => {
-        notification.remove();
+         removeNotification(notification);
     }, 3000);
 }
+
+
+// Remove notification and update positions
+function removeNotification(notification) {
+    if (!notification.parentNode) return;
+    
+    // Remove from current notifications array
+    const index = currentNotifications.indexOf(notification);
+    if (index > -1) {
+        currentNotifications.splice(index, 1);
+    }
+    
+    // Add fade out animation
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100%)';
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+        
+        // Update positions of remaining notifications
+        updateNotificationPositions();
+        
+        // Process next notification in queue
+        processNotificationQueue();
+    }, 300);
+}
+// Update positions of existing notifications
+function updateNotificationPositions() {
+    currentNotifications.forEach((notification, index) => {
+        const newTopPosition = 20 + (index * 80);
+        notification.style.top = `${newTopPosition}px`;
+    });
+}
+// Update positions of existing notifications
+function updateNotificationPositions() {
+    currentNotifications.forEach((notification, index) => {
+        const newTopPosition = 20 + (index * 80);
+        notification.style.top = `${newTopPosition}px`;
+    });
+    }
 
 // Get notification icon
 function getNotificationIcon(type) {

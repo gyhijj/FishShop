@@ -527,21 +527,31 @@ a:hover {
     gap: var(--spacing-sm);
     min-width: 300px;
     animation: slideIn 0.3s ease;
+    color: hsl(var(--text-primary));
 }
 
 .notification.success {
-    border-color: hsl(var(--success));
-    color: hsl(var(--success));
+       background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+
 }
+.notification.info {
+    background: #d1ecf1;
+    border-color: #17a2b8;
+    color: #0c5460;
+    }
 
 .notification.error {
-    border-color: hsl(var(--error));
-    color: hsl(var(--error));
+     background: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
 }
 
 .notification.warning {
-    border-color: hsl(var(--warning));
-    color: hsl(var(--warning));
+      background: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
 }
 
 @keyframes slideIn {
