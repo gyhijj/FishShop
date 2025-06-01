@@ -356,10 +356,7 @@ async function showProduct(productId) {
                     </div>
                 </div>
                 <div class="product-modal-info">
-                    <div class="product-rating">
-                        ${generateStars(product.rating)}
-                        <span class="rating-count">(${product.ratingCount})</span>
-                    </div>
+                    
                     <div class="product-price">
                         <span class="price">${formatPrice(product.price)}</span>
                         ${oldPriceHTML}
