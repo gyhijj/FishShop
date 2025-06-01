@@ -170,10 +170,7 @@ function createProductCard(product) {
         </div>
         <div class="product-info">
             <h4>${product.name}</h4>
-            <div class="product-rating">
-                ${generateStars(product.rating)}
-                <span class="rating-count">(${product.ratingCount})</span>
-            </div>
+           
             <div class="product-price">
                 <span class="price">${formatPrice(product.price)} ₽</span>
                 ${oldPriceHTML}
